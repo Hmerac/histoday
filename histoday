@@ -1,0 +1,159 @@
+#!/usr/bin/env python
+
+import sys,os
+import curses
+import socket
+from math import *
+from datetime import datetime
+from HTMLParser import HTMLParser
+from StringIO import StringIO
+
+# Needs installation
+import feedparser
+
+def draw_menu():
+    # Check internet connection
+    if not internet_on():
+        sys.exit("No internet connection!")
+
+    # Fetch today's events from history.com
+    event_entries = feedparser.parse("https://www.history.com/.rss/full/this-day-in-history").entries
+    event_count = len(event_entries)
+
+    # Fill topics and their descriptions
+    topics = []; descriptions = []
+    for y in range(0, event_count):
+        topics.append(event_entries[y].title.encode('ascii', errors='ignore'))
+        descriptions.append(event_entries[y].content[0].value.encode('ascii', errors='ignore'))
+
+    # Initialize base screen
+    screen = curses.initscr()
+    screen.keypad(1)
+    curses.noecho()
+    curses.cbreak()
+    curses.curs_set(0)
+    height, width = screen.getmaxyx()
+    width = width / 2
+
+    # Left window -- Topics
+    win1 = curses.newwin(height, width, 0, 0)
+    win1.immedok(True)
+
+    # Right window -- Description
+    begin_y_win2 = width
+    win2 = curses.newwin(height, width, 0, begin_y_win2)
+    win2.immedok(True)
+
+    # Text Pad for right window
+    pad2 = win2.derwin(height - 1, width - 2, 1, 1)
+    pad2.immedok(True)
+
+    # Start colors in curses
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_CYAN)
+    curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_WHITE)
+
+    # Initialize text styles
+    highlight_text = curses.color_pair(3)
+    normal_text = curses.A_NORMAL
+
+    # Initialize today
+    today = datetime.today().strftime('%Y-%m-%d')
+
+    # Create a list from the topics
+    position = 1
+    for i in range(0, event_count):
+        if event_count == 0:
+            win1.addstr(1, 1, "There aren't strings", highlight_text)
+        else:
+            if (i == position):
+                win1.addstr(i, 2, str(i) + " - " + topics[i - 1], highlight_text)
+            else:
+                win1.addstr(i, 2, str(i) + " - " + topics[i - 1], normal_text)
+            if i == event_count:
+                break
+
+    k = 0
+    selected_topic = 0
+
+    # Loop where k is the last character pressed
+    while (k != ord('q')):
+
+        # Initialization
+        win1.clear()
+        win1.border(0) 
+        win2.border(0) 
+
+        if k == 66:
+            if not position == event_count:
+                position = position + 1
+        elif k == 65:
+            if not position == event_count:
+                position = position - 1
+        elif k == 10:
+            selected_topic = position - 1
+            win2.clear()
+            win2.border(0) 
+            win2.addstr(0, 0, topics[position-1], curses.color_pair(1))
+            pad2.addstr(0, 0, strip_tags(descriptions[position - 1]), normal_text)
+        elif k == 0:
+            win2.addstr(0, 0, topics[0], curses.color_pair(1))
+            pad2.addstr(0, 0, strip_tags(descriptions[0]), normal_text)
+
+        win2.addstr(0, 0, topics[selected_topic], curses.color_pair(1))
+
+        # Render today
+        win1.addstr(0, 0, today, curses.color_pair(1))
+
+        # Render status bar
+        statusbarstr = "Press 'q' to exit"
+        win1.attron(curses.color_pair(3))
+        win1.addstr(height-1, 0, statusbarstr)
+        win1.addstr(height-1, len(statusbarstr), " " * (width - len(statusbarstr) - 1))
+        win1.attroff(curses.color_pair(3))
+
+        for i in range(1, event_count + 1):
+            if event_count == 0:
+                win1.addstr(1, 1, "There aren't strings", highlight_text)
+            else:
+                if (i == position):
+                    win1.addstr(i, 2, str(i) + " - " + topics[i - 1], highlight_text)
+                else:
+                    win1.addstr(i, 2, str(i) + " - " + topics[i - 1], normal_text)
+                if i == event_count:
+                    break
+
+        # Wait for next input
+        k = win1.getch()
+
+def internet_on():
+    try:
+        host = socket.gethostbyname("google.com")
+        s = socket.create_connection((host, 80), 2)
+        s.close()
+        return True
+    except:
+        pass
+        return False
+
+class MLStripper(HTMLParser):
+    def __init__(self):
+        self.reset()
+        self.text = StringIO()
+    def handle_data(self, d):
+        self.text.write(d)
+    def get_data(self):
+        return self.text.getvalue()
+
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
+
+def main():
+    draw_menu()
+
+if __name__ == "__main__":
+    main()
+
