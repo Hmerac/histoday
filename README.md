@@ -1,4 +1,6 @@
 # histoday
+![Python version](svgs/python-versions.svg)
+![pip install histoday](svgs/pip-install.svg)
 [![PyPI version](https://badge.fury.io/py/histoday.svg)](https://badge.fury.io/py/histoday)
 [![Downloads](https://pepy.tech/badge/histoday)](https://pepy.tech/project/histoday)
 
