@@ -1,4 +1,7 @@
 # histoday
+[![PyPI version](https://badge.fury.io/py/histoday.svg)](https://badge.fury.io/py/histoday)
+[![Downloads](https://pepy.tech/badge/histoday)](https://pepy.tech/project/histoday)
+
 A Python curses library based utility to read today in history.
 
 ![menu screenshot](screenshots/screenshot.png)
@@ -6,7 +9,7 @@ A Python curses library based utility to read today in history.
 # Installation
 Currently, it's only possible to install the package with `pip`. More installation options will come.
 
-Also, I don't want to make this Python 2 compatible, because it's already deprecated. https://www.python.org/doc/sunset-python-2/
+This script requires Python >3.6 and I don't want to make this Python 2 compatible, because it's already deprecated. https://www.python.org/doc/sunset-python-2/
 
 ## 1. Option
 `pip install histoday`
