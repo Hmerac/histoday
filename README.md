@@ -11,7 +11,7 @@ Currently, it's only possible to install the package with `pip`. More installati
 
 or if you use **pip3**
 
-`pip install histoday`
+`pip3 install histoday`
 
 ## 2. Option
 `python -m pip install histoday`
